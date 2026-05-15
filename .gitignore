@@ -1,0 +1,10 @@
+dataset/
+*.jpg
+*.jpeg
+*.png
+
+venv/
+__pycache__/
+
+*.pkl
+*.npy
