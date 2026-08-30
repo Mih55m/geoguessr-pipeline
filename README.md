@@ -6,15 +6,21 @@ An end-to-end computer vision benchmark evaluating classical handcrafted feature
 
 ## Project Architecture
 
-```mermaid
-flowchart TD
-    Raw["Raw Street View Imagery"] --> Feat["1. Parallel Feature Extraction (HOG, LBP, Color Histograms)"]
-    Feat --> PCA["2. Dimensionality Reduction (PCA - 500 Components)"]
-    PCA --> SVM["3. Classical Models (SVM & Ensemble Classifiers)"]
-    
-    SVM -->|"Baseline Evaluation / Feature Ceiling"| Deep["4. Deep Transfer Learning (EfficientNet-B3 Backbone)"]
-    Deep --> Train["5. GPU Training (RandAugment + Weighted Cross-Entropy Loss)"]
-    Train --> App["6. Deployment (Streamlit Interactive Web Dashboard)"]
+```text
+[Raw Input Images]
+        |
+        +---> Stage 1: Classical Baseline
+        |       |-- Parallel Feature Extraction (HOG, LBP, Color Histograms)
+        |       |-- PCA Dimensionality Reduction (500 components)
+        |       `-- HalvingGridSearchCV (SVM & Ensemble Models)
+        |
+        `---> Stage 2: Deep Transfer Learning
+                |-- RandAugment Data Augmentation Pipeline
+                |-- EfficientNet-B3 Backbone Fine-Tuning
+                |-- Dynamic Inverse-Frequency Weighted Cross-Entropy Loss
+                |
+                `---> Stage 3: Deployment
+                        `-- Streamlit Interactive Inference Web Dashboard
 ```
 
 ---
