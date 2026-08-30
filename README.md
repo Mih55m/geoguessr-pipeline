@@ -8,23 +8,13 @@ An end-to-end computer vision benchmark evaluating classical handcrafted feature
 
 ```mermaid
 flowchart TD
-    Raw[Raw Street View Imagery] --> Baseline[Stage 1: Classical Baseline]
+    Raw["Raw Street View Imagery"] --> Feat["1. Parallel Feature Extraction (HOG, LBP, Color Histograms)"]
+    Feat --> PCA["2. Dimensionality Reduction (PCA - 500 Components)"]
+    PCA --> SVM["3. Classical Models (SVM & Ensemble Classifiers)"]
     
-    subgraph Stage_1 [Stage 1: Classical Feature Engineering]
-        Baseline --> Feat[Parallel Feature Extraction: HOG / LBP / Color Histograms]
-        Feat --> PCA[Dimensionality Reduction: PCA 500 Components]
-        PCA --> SVM[HalvingGridSearchCV SVM / Ensemble Models]
-    end
-
-    SVM -->|Low Feature Generalization / Baseline Evaluation| Deep[Stage 2: Deep Transfer Learning]
-
-    subgraph Stage_2 [Stage 2: Convolutional Neural Network]
-        Deep --> Aug[RandAugment Data Pipeline]
-        Aug --> Backbone[EfficientNet-B3 Backbone Fine-Tuning]
-        Backbone --> Loss[Dynamic Inverse-Frequency Weighted CrossEntropyLoss]
-    end
-
-    Stage_2 --> App[Stage 3: Streamlit Interactive Inference Dashboard]
+    SVM -->|"Baseline Evaluation / Feature Ceiling"| Deep["4. Deep Transfer Learning (EfficientNet-B3 Backbone)"]
+    Deep --> Train["5. GPU Training (RandAugment + Weighted Cross-Entropy Loss)"]
+    Train --> App["6. Deployment (Streamlit Interactive Web Dashboard)"]
 ```
 
 ---
