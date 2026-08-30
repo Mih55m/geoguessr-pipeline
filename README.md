@@ -1,43 +1,68 @@
-# Geoguessr AI Predictor 
-
 # Geo-Spatial Landscape Classifier (Geoguessr AI)
 
-An end-to-end computer vision and deep learning project that classifies geographic regions from street and landscape imagery using classical computer vision baselines, deep transfer learning (EfficientNet-B3), and an interactive Streamlit web dashboard.
+An end-to-end computer vision benchmark evaluating classical handcrafted feature extraction against deep transfer learning (EfficientNet-B3) to classify global geographic regions from street and landscape imagery. The final model is deployed via an interactive Streamlit inference web dashboard.
 
 ---
 
 ## Project Architecture
-Raw Images
-   │
-   ├──► [Classical ML Pipeline] ──► HOG / LBP / Color Histograms ──► PCA (500) ──► HalvingGridSearch SVM
-   │
-   └──► [Deep Learning Pipeline] ──► RandAugment ──► EfficientNet-B3 Backbone ──► Dynamic Weighted Cross-Entropy Loss
-                                                                                      │
-                                                                                      ▼
-                                                                       Streamlit Web Interface (Interactive Inference)
+
+```mermaid
+flowchart TD
+    Raw[Raw Street View Imagery] --> Baseline[Stage 1: Classical Baseline]
+    
+    subgraph Stage_1 [Stage 1: Classical Feature Engineering]
+        Baseline --> Feat[Parallel Feature Extraction: HOG / LBP / Color Histograms]
+        Feat --> PCA[Dimensionality Reduction: PCA 500 Components]
+        PCA --> SVM[HalvingGridSearchCV SVM / Ensemble Models]
+    end
+
+    SVM -->|Low Feature Generalization / Baseline Evaluation| Deep[Stage 2: Deep Transfer Learning]
+
+    subgraph Stage_2 [Stage 2: Convolutional Neural Network]
+        Deep --> Aug[RandAugment Data Pipeline]
+        Aug --> Backbone[EfficientNet-B3 Backbone Fine-Tuning]
+        Backbone --> Loss[Dynamic Inverse-Frequency Weighted CrossEntropyLoss]
+    end
+
+    Stage_2 --> App[Stage 3: Streamlit Interactive Inference Dashboard]
+```
 
 ---
 
-## Key Features & Engineering Highlights
+## Engineering Methodology & Evolution
 
-* **Classical Feature Engineering:** Extracted texture (Local Binary Patterns), edge/shape (Histogram of Oriented Gradients), and color histogram descriptors in parallel using `joblib.Parallel` across CPU cores.
-* **Deep Transfer Learning:** Replaced the classification head of a pre-trained `EfficientNet-B3` convolutional neural network and fine-tuned it on CUDA GPU hardware using PyTorch.
-* **Dynamic Class Imbalance Compensation:** Computed inverse class frequencies across training splits dynamically and passed them directly into `nn.CrossEntropyLoss(weight=...)` to handle imbalanced regional data.
-* **Data Augmentation & Scheduling:** Implemented `RandAugment` distortions to enhance generalization and used a `CosineAnnealingLR` scheduler for smooth gradient descent convergence.
-* **Interactive Web Dashboard:** Built a Streamlit interface that accepts image uploads and displays predicted regions alongside real-time probability confidence charts.
+### 1. Classical Baseline: Handcrafted Feature Pipeline
+* **Feature Extraction:** Extracted texture (Local Binary Patterns), edge/structural gradients (Histogram of Oriented Gradients), and color distribution metrics in parallel across CPU cores using `joblib.Parallel`.
+* **Optimization & Tuning:** Reduced feature space dimensionality via Principal Component Analysis (PCA) to 500 components and conducted automated parameter tuning using `HalvingGridSearchCV` with balanced class weights across SVM, MLP, and ensemble classifiers.
+* **Observed Limitation:** Handcrafted visual features struggled to capture subtle environmental variations (e.g., foliage differences, road markings, lighting angles), establishing the benchmark and motivating a deep learning approach.
+
+### 2. Deep Learning Pipeline: Transfer Learning with EfficientNet-B3
+* **Backbone Fine-Tuning:** Transplanted and trained the classification head of a pre-trained `EfficientNet-B3` convolutional neural network in PyTorch on CUDA GPU hardware.
+* **Class Imbalance Mitigation:** Dynamically computed inverse class frequencies across training splits and integrated them directly into `nn.CrossEntropyLoss(weight=...)` to prevent majority region bias.
+* **Regularization & Scheduling:** Implemented `RandAugment` for robust data distortion and utilized a `CosineAnnealingLR` scheduler for stable optimization convergence.
+
+### 3. Deployment: Streamlit Inference Application
+* Built an interactive dashboard allowing users to upload landscape images and view predicted global regions along with real-time class probability distributions.
 
 ---
 
 ## Tech Stack
 
 * **Core Frameworks:** PyTorch, Torchvision, Scikit-Learn, Streamlit
-* **Computer Vision & Image Processing:** OpenCV, Scikit-Image, PIL
-* **Data Manipulation & Acceleration:** NumPy, Pandas, Joblib (Multi-threading), CUDA
-* **Model Architecture & Tuning:** EfficientNet-B3, Support Vector Machines (SVM), Principal Component Analysis (PCA), HalvingGridSearchCV, Cosine Annealing Learning Rate Scheduler
+* **Computer Vision:** OpenCV, Scikit-Image, PIL
+* **Data & Compute Acceleration:** NumPy, Pandas, Joblib (Multi-threading), CUDA
+* **Models & Optimizers:** EfficientNet-B3, Support Vector Machines (SVM), PCA, HalvingGridSearchCV, Cosine Annealing Learning Rate Scheduler
 
 ---
 
 ## How to Run Locally
-1. Clone the repo.
-2. Install dependencies: `pip install -r requirements.txt`
-3. Run the UI: `streamlit run DeepLearning/app.py`
+
+### 1. Install Dependencies
+```bash
+pip install torch torchvision scikit-learn opencv-python scikit-image streamlit pandas pillow tqdm joblib
+```
+
+### 2. Launch the Streamlit Dashboard
+```bash
+streamlit run app.py
+```
